@@ -1,15 +1,12 @@
---// VEX HUB
---// Wide + Short Edition
---// GUI persists through respawns
---// Highlights / HP bars refresh with rendered characters
+--// VEX HUB - STUDIO/ADMIN UI
+--// UI + settings/state management
+--// Designed to persist through player respawns
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local Camera = workspace.CurrentCamera
 
 --==================================================
 -- SETTINGS
@@ -113,7 +110,7 @@ CollapseCorner.CornerRadius = UDim.new(0, 7)
 CollapseCorner.Parent = CollapseButton
 
 --==================================================
--- SCROLL AREA
+-- SCROLLING CONTENT
 --==================================================
 
 local Scroll = Instance.new("ScrollingFrame")
@@ -125,7 +122,7 @@ Scroll.BorderSizePixel = 0
 Scroll.ScrollBarThickness = 4
 Scroll.ScrollBarImageColor3 = Color3.fromRGB(145, 70, 255)
 Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+Scroll.CanvasSize = UDim2.new()
 Scroll.Parent = Main
 
 local Layout = Instance.new("UIListLayout")
@@ -141,7 +138,7 @@ Padding.PaddingRight = UDim.new(0, 6)
 Padding.Parent = Scroll
 
 --==================================================
--- UI HELPERS
+-- HELPERS
 --==================================================
 
 local function Section(text)
@@ -181,16 +178,16 @@ local function Button(text)
 	return button
 end
 
-local function SetButtonState(button, label, enabled)
-	button.Text = label .. "     [ " .. (enabled and "ON" or "OFF") .. " ]"
+local function SetToggle(button, name, value)
+	button.Text = name .. "     [ " .. (value and "ON" or "OFF") .. " ]"
 
-	button.BackgroundColor3 = enabled
+	button.BackgroundColor3 = value
 		and Color3.fromRGB(75, 35, 110)
 		or Color3.fromRGB(32, 21, 42)
 end
 
 --==================================================
--- MOVEMENT
+-- MOVEMENT UI
 --==================================================
 
 Section("🏃  MOVEMENT / CHARACTER")
@@ -199,7 +196,7 @@ local NoclipButton = Button("Noclip     [ OFF ]")
 
 NoclipButton.MouseButton1Click:Connect(function()
 	Settings.Noclip = not Settings.Noclip
-	SetButtonState(NoclipButton, "Noclip", Settings.Noclip)
+	SetToggle(NoclipButton, "Noclip", Settings.Noclip)
 end)
 
 local SpeedButton = Button("WalkSpeed: 16")
@@ -218,7 +215,7 @@ local InfiniteJumpButton = Button("Infinite Jump     [ OFF ]")
 
 InfiniteJumpButton.MouseButton1Click:Connect(function()
 	Settings.InfiniteJump = not Settings.InfiniteJump
-	SetButtonState(
+	SetToggle(
 		InfiniteJumpButton,
 		"Infinite Jump",
 		Settings.InfiniteJump
@@ -226,7 +223,7 @@ InfiniteJumpButton.MouseButton1Click:Connect(function()
 end)
 
 --==================================================
--- HIGHLIGHTING
+-- HIGHLIGHT UI
 --==================================================
 
 Section("✨  HIGHLIGHTING")
@@ -236,17 +233,8 @@ local TeamButton = Button("Team Highlight     [ OFF ]")
 local HPButton = Button("HP Bar     [ OFF ]")
 
 local function RefreshHighlightButtons()
-	SetButtonState(
-		AllButton,
-		"All Highlight",
-		Settings.AllHighlight
-	)
-
-	SetButtonState(
-		TeamButton,
-		"Team Highlight",
-		Settings.TeamHighlight
-	)
+	SetToggle(AllButton, "All Highlight", Settings.AllHighlight)
+	SetToggle(TeamButton, "Team Highlight", Settings.TeamHighlight)
 end
 
 AllButton.MouseButton1Click:Connect(function()
@@ -271,32 +259,37 @@ end)
 
 HPButton.MouseButton1Click:Connect(function()
 	Settings.HPBar = not Settings.HPBar
-	SetButtonState(HPButton, "HP Bar", Settings.HPBar)
+	SetToggle(HPButton, "HP Bar", Settings.HPBar)
 end)
 
 --==================================================
--- AIM ASSIST
+-- AIM UI
 --==================================================
 
 Section("🎯  AIM ASSIST")
 
 local AimButton = Button("Aim     [ OFF ]")
-local IgnoreTeamButton = Button("Ignore Team     [ ON ]")
 
 AimButton.MouseButton1Click:Connect(function()
 	Settings.Aim = not Settings.Aim
-	SetButtonState(AimButton, "Aim", Settings.Aim)
+	SetToggle(AimButton, "Aim", Settings.Aim)
 end)
+
+local IgnoreTeamButton = Button("Ignore Team     [ ON ]")
 
 IgnoreTeamButton.MouseButton1Click:Connect(function()
 	Settings.IgnoreTeam = not Settings.IgnoreTeam
 
-	SetButtonState(
+	SetToggle(
 		IgnoreTeamButton,
 		"Ignore Team",
 		Settings.IgnoreTeam
 	)
 end)
+
+--==================================================
+-- UPDATE RATE: 5-10 MS
+--==================================================
 
 local RateButton = Button("Update Rate: 5 ms")
 
@@ -304,12 +297,16 @@ RateButton.MouseButton1Click:Connect(function()
 	Settings.UpdateRate += 1
 
 	if Settings.UpdateRate > 10 then
-		Settings.UpdateRate = 1
+		Settings.UpdateRate = 5
 	end
 
 	RateButton.Text =
 		"Update Rate: " .. Settings.UpdateRate .. " ms"
 end)
+
+--==================================================
+-- SMOOTHNESS
+--==================================================
 
 local SmoothButton = Button("Smoothness: 5")
 
@@ -324,15 +321,21 @@ SmoothButton.MouseButton1Click:Connect(function()
 		"Smoothness: " .. Settings.Smoothness
 end)
 
+--==================================================
+-- PART
+--==================================================
+
 local PartButton = Button("Part: [ HEAD ✓ ]   [ BODY ]")
 
 PartButton.MouseButton1Click:Connect(function()
 	if Settings.AimPart == "Head" then
 		Settings.AimPart = "Body"
-		PartButton.Text = "Part: [ HEAD ]   [ BODY ✓ ]"
+		PartButton.Text =
+			"Part: [ HEAD ]   [ BODY ✓ ]"
 	else
 		Settings.AimPart = "Head"
-		PartButton.Text = "Part: [ HEAD ✓ ]   [ BODY ]"
+		PartButton.Text =
+			"Part: [ HEAD ✓ ]   [ BODY ]"
 	end
 end)
 
@@ -395,496 +398,9 @@ end
 
 MakeFOVButton(30)
 MakeFOVButton(45)
+
 local FOV90 = MakeFOVButton(90)
-
 FOV90.BackgroundColor3 = Color3.fromRGB(95, 45, 145)
-
---==================================================
--- FOV CIRCLE
---==================================================
-
-local FOVCircle = Instance.new("Frame")
-FOVCircle.Name = "FOVCircle"
-FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
-FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
-FOVCircle.BackgroundTransparency = 1
-FOVCircle.Size = UDim2.new(0, 180, 0, 180)
-FOVCircle.Visible = false
-FOVCircle.ZIndex = 1
-FOVCircle.Parent = ScreenGui
-
-local CircleCorner = Instance.new("UICorner")
-CircleCorner.CornerRadius = UDim.new(1, 0)
-CircleCorner.Parent = FOVCircle
-
-local CircleStroke = Instance.new("UIStroke")
-CircleStroke.Color = Color3.fromRGB(170, 70, 255)
-CircleStroke.Thickness = 2
-CircleStroke.Transparency = 0.15
-CircleStroke.Parent = FOVCircle
-
-local function UpdateFOV()
-	FOVCircle.Size = UDim2.new(
-		0,
-		Settings.FOV * 4,
-		0,
-		Settings.FOV * 4
-	)
-
-	FOVCircle.Visible = Settings.Aim
-end
-
---==================================================
--- VISUAL STORAGE
---==================================================
-
-local Highlights = {}
-local HPBars = {}
-local CharacterConnections = {}
-
-local function RemoveVisuals(player)
-	if Highlights[player] then
-		Highlights[player]:Destroy()
-		Highlights[player] = nil
-	end
-
-	if HPBars[player] then
-		HPBars[player]:Destroy()
-		HPBars[player] = nil
-	end
-end
-
-local function ShouldHighlight(player)
-	if player == LocalPlayer then
-		return false
-	end
-
-	local character = player.Character
-
-	if not character or not character.Parent then
-		return false
-	end
-
-	if Settings.AllHighlight then
-		return true
-	end
-
-	if Settings.TeamHighlight then
-		return player.Team == LocalPlayer.Team
-	end
-
-	return false
-end
-
---==================================================
--- HP BAR
---==================================================
-
-local function CreateHPBar(player, character)
-	local humanoid =
-		character:FindFirstChildOfClass("Humanoid")
-
-	local root = character:FindFirstChild("HumanoidRootPart")
-
-	if not humanoid or not root then
-		return
-	end
-
-	if HPBars[player] then
-		HPBars[player]:Destroy()
-	end
-
-	local billboard = Instance.new("BillboardGui")
-	billboard.Name = "VexHPBar"
-	billboard.Adornee = root
-	billboard.Size = UDim2.new(0, 7, 0, 65)
-	billboard.StudsOffset = Vector3.new(-2.3, 0, 0)
-	billboard.AlwaysOnTop = true
-	billboard.Parent = root
-
-	local background = Instance.new("Frame")
-	background.Size = UDim2.new(1, 0, 1, 0)
-	background.BackgroundColor3 =
-		Color3.fromRGB(25, 25, 25)
-	background.BorderSizePixel = 0
-	background.Parent = billboard
-
-	local backgroundCorner = Instance.new("UICorner")
-	backgroundCorner.CornerRadius = UDim.new(1, 0)
-	backgroundCorner.Parent = background
-
-	local fill = Instance.new("Frame")
-	fill.AnchorPoint = Vector2.new(0, 1)
-	fill.Position = UDim2.new(0, 0, 1, 0)
-	fill.Size = UDim2.new(1, 0, 1, 0)
-	fill.BackgroundColor3 =
-		Color3.fromRGB(170, 70, 255)
-	fill.BorderSizePixel = 0
-	fill.Parent = background
-
-	local fillCorner = Instance.new("UICorner")
-	fillCorner.CornerRadius = UDim.new(1, 0)
-	fillCorner.Parent = fill
-
-	local function UpdateHealth(health)
-		local percent = math.clamp(
-			health / math.max(humanoid.MaxHealth, 1),
-			0,
-			1
-		)
-
-		fill.Size = UDim2.new(1, 0, percent, 0)
-	end
-
-	humanoid.HealthChanged:Connect(UpdateHealth)
-
-	UpdateHealth(humanoid.Health)
-
-	HPBars[player] = billboard
-end
-
---==================================================
--- HIGHLIGHT CREATION
---==================================================
-
-local function UpdatePlayerVisual(player)
-	if player == LocalPlayer then
-		return
-	end
-
-	local character = player.Character
-
-	if not character or not character.Parent then
-		RemoveVisuals(player)
-		return
-	end
-
-	if not ShouldHighlight(player) then
-		RemoveVisuals(player)
-		return
-	end
-
-	-- Highlight
-	if not Highlights[player]
-		or Highlights[player].Parent ~= character then
-
-		if Highlights[player] then
-			Highlights[player]:Destroy()
-		end
-
-		local highlight = Instance.new("Highlight")
-
-		highlight.Name = "VexHighlight"
-		highlight.Adornee = character
-		highlight.FillColor =
-			Color3.fromRGB(155, 55, 255)
-		highlight.OutlineColor =
-			Color3.fromRGB(220, 170, 255)
-		highlight.FillTransparency = 0.5
-		highlight.OutlineTransparency = 0
-		highlight.DepthMode =
-			Enum.HighlightDepthMode.AlwaysOnTop
-
-		highlight.Parent = character
-
-		Highlights[player] = highlight
-	end
-
-	-- HP bar
-	if Settings.HPBar then
-		if not HPBars[player]
-			or HPBars[player].Parent ~= character:FindFirstChild("HumanoidRootPart") then
-
-			CreateHPBar(player, character)
-		end
-	else
-		if HPBars[player] then
-			HPBars[player]:Destroy()
-			HPBars[player] = nil
-		end
-	end
-end
-
---==================================================
--- PLAYER SETUP
---==================================================
-
-local function SetupPlayer(player)
-	if player == LocalPlayer then
-		return
-	end
-
-	if CharacterConnections[player] then
-		for _, connection in ipairs(CharacterConnections[player]) do
-			connection:Disconnect()
-		end
-	end
-
-	CharacterConnections[player] = {}
-
-	table.insert(
-		CharacterConnections[player],
-		player.CharacterAdded:Connect(function(character)
-			RemoveVisuals(player)
-
-			-- Wait until the character is actually rendered/ready.
-			task.spawn(function()
-				character:WaitForChild("HumanoidRootPart", 5)
-				task.wait()
-
-				UpdatePlayerVisual(player)
-			end)
-		end)
-	)
-
-	table.insert(
-		CharacterConnections[player],
-		player.CharacterRemoving:Connect(function()
-			RemoveVisuals(player)
-		end)
-	)
-
-	table.insert(
-		CharacterConnections[player],
-		player:GetPropertyChangedSignal("Team"):Connect(function()
-			UpdatePlayerVisual(player)
-		end)
-	)
-
-	if player.Character then
-		task.spawn(function()
-			UpdatePlayerVisual(player)
-		end)
-	end
-end
-
-for _, player in ipairs(Players:GetPlayers()) do
-	SetupPlayer(player)
-end
-
-Players.PlayerAdded:Connect(SetupPlayer)
-
-Players.PlayerRemoving:Connect(function(player)
-	RemoveVisuals(player)
-
-	if CharacterConnections[player] then
-		for _, connection in ipairs(CharacterConnections[player]) do
-			connection:Disconnect()
-		end
-
-		CharacterConnections[player] = nil
-	end
-end)
-
---==================================================
--- VISUAL REFRESH LOOP
---==================================================
-
-task.spawn(function()
-	while ScreenGui.Parent do
-		for _, player in ipairs(Players:GetPlayers()) do
-			if player ~= LocalPlayer then
-				UpdatePlayerVisual(player)
-			end
-		end
-
-		task.wait(0.2)
-	end
-end)
-
---==================================================
--- NOCLIP
---==================================================
-
-RunService.Stepped:Connect(function()
-	if not Settings.Noclip then
-		return
-	end
-
-	local character = LocalPlayer.Character
-
-	if not character then
-		return
-	end
-
-	for _, object in ipairs(character:GetDescendants()) do
-		if object:IsA("BasePart") then
-			object.CanCollide = false
-		end
-	end
-end)
-
---==================================================
--- WALKSPEED
---==================================================
-
-RunService.Heartbeat:Connect(function()
-	local character = LocalPlayer.Character
-
-	if not character then
-		return
-	end
-
-	local humanoid =
-		character:FindFirstChildOfClass("Humanoid")
-
-	if humanoid then
-		humanoid.WalkSpeed = Settings.WalkSpeed
-	end
-end)
-
---==================================================
--- INFINITE JUMP
---==================================================
-
-UserInputService.JumpRequest:Connect(function()
-	if not Settings.InfiniteJump then
-		return
-	end
-
-	local character = LocalPlayer.Character
-
-	if not character then
-		return
-	end
-
-	local humanoid =
-		character:FindFirstChildOfClass("Humanoid")
-
-	if humanoid then
-		humanoid:ChangeState(
-			Enum.HumanoidStateType.Jumping
-		)
-	end
-end)
-
---==================================================
--- AIM ASSIST
---==================================================
-
-local function GetAimPart(character)
-	if Settings.AimPart == "Head" then
-		return character:FindFirstChild("Head")
-	end
-
-	return character:FindFirstChild("UpperTorso")
-		or character:FindFirstChild("Torso")
-		or character:FindFirstChild("HumanoidRootPart")
-end
-
-local function GetClosestTarget()
-	local closestPart = nil
-	local closestDistance = math.huge
-
-	local viewport = Camera.ViewportSize
-
-	local center = Vector2.new(
-		viewport.X / 2,
-		viewport.Y / 2
-	)
-
-	for _, player in ipairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer then
-
-			-- Ignore teammates when enabled.
-			if not (
-				Settings.IgnoreTeam
-				and player.Team == LocalPlayer.Team
-			) then
-
-				local character = player.Character
-
-				local humanoid =
-					character
-					and character:FindFirstChildOfClass("Humanoid")
-
-				if character
-					and character.Parent
-					and humanoid
-					and humanoid.Health > 0 then
-
-					local part = GetAimPart(character)
-
-					if part then
-						local screenPosition, visible =
-							Camera:WorldToViewportPoint(
-								part.Position
-							)
-
-						if visible and screenPosition.Z > 0 then
-
-							local screenDistance =
-								(
-									Vector2.new(
-										screenPosition.X,
-										screenPosition.Y
-									) - center
-								).Magnitude
-
-							local radius =
-								Settings.FOV * 2
-
-							if screenDistance <= radius
-								and screenDistance < closestDistance then
-
-								closestDistance =
-									screenDistance
-
-								closestPart = part
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-
-	return closestPart
-end
-
-task.spawn(function()
-	while ScreenGui.Parent do
-		if Settings.Aim then
-			local target = GetClosestTarget()
-
-			if target then
-				local cameraPosition =
-					Camera.CFrame.Position
-
-				local targetCFrame =
-					CFrame.lookAt(
-						cameraPosition,
-						target.Position
-					)
-
-				local alpha =
-					math.clamp(
-						Settings.Smoothness / 10,
-						0.05,
-						1
-					)
-
-				Camera.CFrame =
-					Camera.CFrame:Lerp(
-						targetCFrame,
-						alpha
-					)
-			end
-		end
-
-		task.wait(
-			math.max(Settings.UpdateRate, 1) / 1000
-		)
-	end
-end)
-
---==================================================
--- FOV UPDATE
---==================================================
-
-RunService.RenderStepped:Connect(function()
-	UpdateFOV()
-end)
 
 --==================================================
 -- COLLAPSE
@@ -907,7 +423,7 @@ CollapseButton.MouseButton1Click:Connect(function()
 end)
 
 --==================================================
--- DRAG SYSTEM
+-- DRAG
 --==================================================
 
 local Locked = false
@@ -942,7 +458,6 @@ TopBar.InputBegan:Connect(function(input)
 		Dragging = true
 		DragStart = input.Position
 		StartPosition = Main.Position
-		DragInput = input
 	end
 end)
 
@@ -986,26 +501,4 @@ LockButton.MouseButton1Click:Connect(function()
 	end
 end)
 
---==================================================
--- CHARACTER RESPAWN
---==================================================
--- The GUI itself is intentionally NOT recreated here.
--- ResetOnSpawn=false keeps the same GUI alive.
-
-LocalPlayer.CharacterAdded:Connect(function(character)
-	task.spawn(function()
-		character:WaitForChild("Humanoid", 5)
-
-		-- Reapply movement settings to the new character.
-		local humanoid =
-			character:FindFirstChildOfClass("Humanoid")
-
-		if humanoid then
-			humanoid.WalkSpeed = Settings.WalkSpeed
-		end
-	end)
-end)
-
-UpdateFOV()
-
-print("Vex Hub loaded successfully.")
+print("Vex Hub UI loaded.")
