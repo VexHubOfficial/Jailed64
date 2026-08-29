@@ -28,14 +28,14 @@ local Settings = {
 -- REMOVE OLD GUI
 --==================================================
 
-local Old = PlayerGui:FindFirstChild("VexHub")
+local OldGui = PlayerGui:FindFirstChild("VexHub")
 
-if Old then
-	Old:Destroy()
+if OldGui then
+	OldGui:Destroy()
 end
 
 --==================================================
--- GUI
+-- SCREEN GUI
 --==================================================
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -44,6 +44,10 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = PlayerGui
+
+--==================================================
+-- MAIN
+--==================================================
 
 local Main = Instance.new("Frame")
 Main.Name = "Main"
@@ -129,7 +133,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 --==================================================
--- LOCK
+-- LOCK BUTTON
 --==================================================
 
 local LockButton = Instance.new("TextButton")
@@ -146,7 +150,7 @@ LockCorner.CornerRadius = UDim.new(0, 7)
 LockCorner.Parent = LockButton
 
 --==================================================
--- COLLAPSE
+-- COLLAPSE BUTTON
 --==================================================
 
 local CollapseButton = Instance.new("TextButton")
@@ -164,7 +168,7 @@ CollapseCorner.CornerRadius = UDim.new(0, 7)
 CollapseCorner.Parent = CollapseButton
 
 --==================================================
--- SCROLL
+-- SCROLLING CONTENT
 --==================================================
 
 local Scroll = Instance.new("ScrollingFrame")
@@ -175,8 +179,8 @@ Scroll.BackgroundTransparency = 1
 Scroll.BorderSizePixel = 0
 Scroll.ScrollBarThickness = 4
 Scroll.ScrollBarImageColor3 = Color3.fromRGB(145, 70, 255)
-Scroll.CanvasSize = UDim2.new()
 Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Scroll.CanvasSize = UDim2.new()
 Scroll.Parent = Main
 
 local ScrollPadding = Instance.new("UIPadding")
@@ -277,14 +281,19 @@ local function CreateButton(Parent, Text)
 	Stroke.Parent = Button
 
 	Button.MouseEnter:Connect(function()
-		Button.BackgroundColor3 = Color3.fromRGB(43, 27, 57)
+		if not Button:GetAttribute("Enabled") then
+			Button.BackgroundColor3 =
+				Color3.fromRGB(43, 27, 57)
+		end
 	end)
 
 	Button.MouseLeave:Connect(function()
 		if Button:GetAttribute("Enabled") then
-			Button.BackgroundColor3 = Color3.fromRGB(75, 35, 110)
+			Button.BackgroundColor3 =
+				Color3.fromRGB(75, 35, 110)
 		else
-			Button.BackgroundColor3 = Color3.fromRGB(32, 21, 42)
+			Button.BackgroundColor3 =
+				Color3.fromRGB(32, 21, 42)
 		end
 	end)
 
@@ -306,7 +315,7 @@ local function SetToggle(Button, Name, State)
 end
 
 --==================================================
--- MOVEMENT SECTION
+-- MOVEMENT / CHARACTER
 --==================================================
 
 local Movement = CreateSection(
@@ -314,32 +323,28 @@ local Movement = CreateSection(
 	"🏃"
 )
 
-local NoclipButton =
-	CreateButton(
-		Movement,
-		"Noclip     [ OFF ]"
-	)
+local NoclipButton = CreateButton(
+	Movement,
+	"Noclip     [ OFF ]"
+)
 
-local InvisibilityButton =
-	CreateButton(
-		Movement,
-		"Invisibility     [ OFF ]"
-	)
+local InvisibilityButton = CreateButton(
+	Movement,
+	"Invisibility     [ OFF ]"
+)
 
-local SpeedButton =
-	CreateButton(
-		Movement,
-		"WalkSpeed: 16"
-	)
+local SpeedButton = CreateButton(
+	Movement,
+	"WalkSpeed: 16"
+)
 
-local InfiniteJumpButton =
-	CreateButton(
-		Movement,
-		"Infinite Jump     [ OFF ]"
-	)
+local InfiniteJumpButton = CreateButton(
+	Movement,
+	"Infinite Jump     [ OFF ]"
+)
 
 --==================================================
--- HIGHLIGHT SECTION
+-- HIGHLIGHTING
 --==================================================
 
 local HighlightSection = CreateSection(
@@ -347,26 +352,23 @@ local HighlightSection = CreateSection(
 	"✨"
 )
 
-local AllButton =
-	CreateButton(
-		HighlightSection,
-		"All Highlight     [ OFF ]"
-	)
+local AllButton = CreateButton(
+	HighlightSection,
+	"All Highlight     [ OFF ]"
+)
 
-local TeamButton =
-	CreateButton(
-		HighlightSection,
-		"Team Highlight     [ OFF ]"
-	)
+local TeamButton = CreateButton(
+	HighlightSection,
+	"Team Highlight     [ OFF ]"
+)
 
-local HPButton =
-	CreateButton(
-		HighlightSection,
-		"HP Bar     [ OFF ]"
-	)
+local HPButton = CreateButton(
+	HighlightSection,
+	"HP Bar     [ OFF ]"
+)
 
 --==================================================
--- VISUAL FOLDER
+-- VISUAL STORAGE
 --==================================================
 
 local VisualFolder = Instance.new("Folder")
@@ -376,7 +378,7 @@ VisualFolder.Parent = ScreenGui
 local Visuals = {}
 
 --==================================================
--- REMOVE VISUAL
+-- REMOVE PLAYER VISUAL
 --==================================================
 
 local function RemoveVisual(Player)
@@ -451,7 +453,8 @@ local function CreateHPBar(Player, Character, Humanoid)
 
 	local Background = Instance.new("Frame")
 	Background.Size = UDim2.fromScale(1, 1)
-	Background.BackgroundColor3 = Color3.fromRGB(25, 20, 30)
+	Background.BackgroundColor3 =
+		Color3.fromRGB(25, 20, 30)
 	Background.BorderSizePixel = 0
 	Background.Parent = Billboard
 
@@ -463,7 +466,8 @@ local function CreateHPBar(Player, Character, Humanoid)
 	Fill.AnchorPoint = Vector2.new(0, 1)
 	Fill.Position = UDim2.fromScale(0, 1)
 	Fill.Size = UDim2.fromScale(1, 1)
-	Fill.BackgroundColor3 = Color3.fromRGB(170, 70, 255)
+	Fill.BackgroundColor3 =
+		Color3.fromRGB(170, 70, 255)
 	Fill.BorderSizePixel = 0
 	Fill.Parent = Background
 
@@ -500,7 +504,7 @@ local function CreateHPBar(Player, Character, Humanoid)
 end
 
 --==================================================
--- CREATE VISUAL
+-- CREATE PLAYER VISUAL
 --==================================================
 
 local function CreateVisual(Player)
@@ -639,6 +643,7 @@ local function SetupPlayer(Player)
 	Player:GetPropertyChangedSignal(
 		"Team"
 	):Connect(function()
+
 		CreateVisual(Player)
 	end)
 
@@ -659,6 +664,10 @@ Players.PlayerRemoving:Connect(function(Player)
 	RemoveVisual(Player)
 end)
 
+--==================================================
+-- CONTINUOUS VISUAL REFRESH
+--==================================================
+
 task.spawn(function()
 
 	while ScreenGui.Parent do
@@ -677,7 +686,7 @@ task.spawn(function()
 end)
 
 --==================================================
--- HIGHLIGHT BUTTONS
+-- ALL HIGHLIGHT
 --==================================================
 
 AllButton.MouseButton1Click:Connect(function()
@@ -702,6 +711,10 @@ AllButton.MouseButton1Click:Connect(function()
 	)
 end)
 
+--==================================================
+-- TEAM HIGHLIGHT
+--==================================================
+
 TeamButton.MouseButton1Click:Connect(function()
 
 	Settings.TeamHighlight =
@@ -723,6 +736,10 @@ TeamButton.MouseButton1Click:Connect(function()
 		Settings.TeamHighlight
 	)
 end)
+
+--==================================================
+-- HP BAR
+--==================================================
 
 HPButton.MouseButton1Click:Connect(function()
 
@@ -854,32 +871,54 @@ UserInputService.JumpRequest:Connect(function()
 end)
 
 --==================================================
--- INVISIBILITY
+-- CAMERA-SAFE INVISIBILITY
 --==================================================
 
-local InvisibleParts = {}
-local HideOffset = Vector3.new(0, -100, 0)
+local HiddenObjects = {}
 
-local function RestoreBody()
+local function HideObject(Object)
+	if HiddenObjects[Object] == nil then
 
-	for Part, OriginalCFrame in pairs(InvisibleParts) do
+		if Object:IsA("BasePart") then
+			HiddenObjects[Object] =
+				Object.LocalTransparencyModifier
 
-		if Part and Part.Parent then
-			Part.CFrame = OriginalCFrame
+		elseif Object:IsA("Decal")
+			or Object:IsA("Texture") then
+
+			HiddenObjects[Object] =
+				Object.Transparency
 		end
 	end
 
-	table.clear(InvisibleParts)
+	if Object:IsA("BasePart") then
+		Object.LocalTransparencyModifier = 1
+
+	elseif Object:IsA("Decal")
+		or Object:IsA("Texture") then
+
+		Object.Transparency = 1
+	end
 end
 
-local function HideBody()
+local function ShowObject(Object)
+	local Original = HiddenObjects[Object]
 
-	local Character =
-		LocalPlayer.Character
-
-	if not Character then
+	if Original == nil then
 		return
 	end
+
+	if Object:IsA("BasePart") then
+		Object.LocalTransparencyModifier = Original
+
+	elseif Object:IsA("Decal")
+		or Object:IsA("Texture") then
+
+		Object.Transparency = Original
+	end
+end
+
+local function HideCharacter(Character)
 
 	for _, Object in ipairs(
 		Character:GetDescendants()
@@ -888,16 +927,26 @@ local function HideBody()
 		if Object:IsA("BasePart")
 			and Object.Name ~= "HumanoidRootPart" then
 
-			if not InvisibleParts[Object] then
-				InvisibleParts[Object] =
-					Object.CFrame
-			end
+			HideObject(Object)
 
-			Object.CFrame =
-				InvisibleParts[Object]
-				+ HideOffset
+		elseif Object:IsA("Decal")
+			or Object:IsA("Texture") then
+
+			HideObject(Object)
 		end
 	end
+end
+
+local function RestoreCharacter(Character)
+
+	for Object in pairs(HiddenObjects) do
+
+		if Object and Object.Parent then
+			ShowObject(Object)
+		end
+	end
+
+	table.clear(HiddenObjects)
 end
 
 InvisibilityButton.MouseButton1Click:Connect(function()
@@ -911,43 +960,74 @@ InvisibilityButton.MouseButton1Click:Connect(function()
 		Settings.Invisibility
 	)
 
-	if not Settings.Invisibility then
-		RestoreBody()
+	local Character =
+		LocalPlayer.Character
+
+	if not Character then
+		return
+	end
+
+	if Settings.Invisibility then
+		HideCharacter(Character)
+	else
+		RestoreCharacter(Character)
 	end
 end)
 
-RunService.Stepped:Connect(function()
+-- Keep visual hiding active without changing
+-- character position, root position, or camera.
 
-	if Settings.Invisibility then
-		HideBody()
+RunService.RenderStepped:Connect(function()
+
+	if not Settings.Invisibility then
+		return
+	end
+
+	local Character =
+		LocalPlayer.Character
+
+	if Character then
+		HideCharacter(Character)
 	end
 end)
 
 --==================================================
--- RESPAWN
+-- LOCAL PLAYER RESPAWN
 --==================================================
 
 LocalPlayer.CharacterAdded:Connect(function(Character)
 
-	table.clear(InvisibleParts)
+	table.clear(HiddenObjects)
 
 	task.spawn(function()
 
-		Character:WaitForChild(
-			"Humanoid",
-			5
-		)
+		local Humanoid =
+			Character:WaitForChild(
+				"Humanoid",
+				5
+			)
 
 		task.wait()
-
-		local Humanoid =
-			Character:FindFirstChildOfClass(
-				"Humanoid"
-			)
 
 		if Humanoid then
 			Humanoid.WalkSpeed =
 				Settings.WalkSpeed
+		end
+
+		if Settings.Invisibility then
+			HideCharacter(Character)
+		end
+
+		if Settings.Noclip then
+
+			for _, Object in ipairs(
+				Character:GetDescendants()
+			) do
+
+				if Object:IsA("BasePart") then
+					Object.CanCollide = false
+				end
+			end
 		end
 	end)
 end)
@@ -1057,7 +1137,7 @@ UserInputService.InputEnded:Connect(function(Input)
 end)
 
 --==================================================
--- LOCK BUTTON
+-- GUI LOCK
 --==================================================
 
 LockButton.MouseButton1Click:Connect(function()
@@ -1088,4 +1168,4 @@ LockButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-print("Vex Hub loaded successfully.")
+print("Vex Hub loaded successfully 💜")
