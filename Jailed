@@ -1,10 +1,11 @@
 --// VEX HUB
---// LocalScript
---// For an experience you control
+--// CLIENT-ONLY ADMIN TEST PANEL
+--// Place as a LocalScript / load from your own experience
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -16,8 +17,9 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local Settings = {
 	Noclip = false,
 	Invisibility = false,
-	WalkSpeed = 16,
 	InfiniteJump = false,
+
+	WalkSpeed = 16,
 
 	AllHighlight = false,
 	TeamHighlight = false,
@@ -25,37 +27,32 @@ local Settings = {
 }
 
 --==================================================
--- REMOVE OLD GUI
+-- CLEAN OLD GUI
 --==================================================
 
-local OldGui = PlayerGui:FindFirstChild("VexHub")
+local old = PlayerGui:FindFirstChild("VexHub")
 
-if OldGui then
-	OldGui:Destroy()
+if old then
+	old:Destroy()
 end
 
 --==================================================
--- SCREEN GUI
+-- GUI
 --==================================================
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "VexHub"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.Parent = PlayerGui
-
---==================================================
--- MAIN
---==================================================
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "VexHub"
+Gui.ResetOnSpawn = false
+Gui.IgnoreGuiInset = true
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Gui.Parent = PlayerGui
 
 local Main = Instance.new("Frame")
-Main.Name = "Main"
-Main.Size = UDim2.fromOffset(430, 365)
-Main.Position = UDim2.new(1, -445, 0.5, -182)
+Main.Size = UDim2.fromOffset(440, 370)
+Main.Position = UDim2.new(1, -455, 0.5, -185)
 Main.BackgroundColor3 = Color3.fromRGB(17, 11, 24)
 Main.BorderSizePixel = 0
-Main.Parent = ScreenGui
+Main.Parent = Gui
 
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 12)
@@ -70,16 +67,15 @@ MainStroke.Parent = Main
 -- TOP BAR
 --==================================================
 
-local TopBar = Instance.new("Frame")
-TopBar.Name = "TopBar"
-TopBar.Size = UDim2.new(1, 0, 0, 46)
-TopBar.BackgroundColor3 = Color3.fromRGB(28, 17, 38)
-TopBar.BorderSizePixel = 0
-TopBar.Parent = Main
+local Top = Instance.new("Frame")
+Top.Size = UDim2.new(1, 0, 0, 46)
+Top.BackgroundColor3 = Color3.fromRGB(28, 17, 38)
+Top.BorderSizePixel = 0
+Top.Parent = Main
 
 local TopCorner = Instance.new("UICorner")
 TopCorner.CornerRadius = UDim.new(0, 12)
-TopCorner.Parent = TopBar
+TopCorner.Parent = Top
 
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.fromOffset(110, 46)
@@ -90,89 +86,50 @@ Title.TextColor3 = Color3.fromRGB(220, 180, 255)
 Title.TextSize = 20
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TopBar
-
---==================================================
--- FPS / PING
---==================================================
+Title.Parent = Top
 
 local StatsLabel = Instance.new("TextLabel")
-StatsLabel.Size = UDim2.fromOffset(135, 30)
-StatsLabel.Position = UDim2.new(1, -230, 0.5, -15)
+StatsLabel.Size = UDim2.fromOffset(145, 30)
+StatsLabel.Position = UDim2.new(1, -235, 0.5, -15)
 StatsLabel.BackgroundTransparency = 1
-StatsLabel.Text = "60 FPS | 0 MS"
+StatsLabel.Text = "FPS: -- | MS: --"
 StatsLabel.TextColor3 = Color3.fromRGB(190, 160, 220)
 StatsLabel.TextSize = 12
 StatsLabel.Font = Enum.Font.GothamMedium
 StatsLabel.TextXAlignment = Enum.TextXAlignment.Right
-StatsLabel.Parent = TopBar
-
-local FPSFrames = 0
-local FPSStart = os.clock()
-
-RunService.RenderStepped:Connect(function()
-	FPSFrames += 1
-
-	local Now = os.clock()
-
-	if Now - FPSStart >= 1 then
-		local FPS = math.floor(
-			FPSFrames / (Now - FPSStart) + 0.5
-		)
-
-		local Ping = math.floor(
-			LocalPlayer:GetNetworkPing() * 1000 + 0.5
-		)
-
-		StatsLabel.Text =
-			FPS .. " FPS | " .. Ping .. " MS"
-
-		FPSFrames = 0
-		FPSStart = Now
-	end
-end)
-
---==================================================
--- LOCK BUTTON
---==================================================
+StatsLabel.Parent = Top
 
 local LockButton = Instance.new("TextButton")
-LockButton.Size = UDim2.fromOffset(38, 30)
-LockButton.Position = UDim2.new(1, -88, 0.5, -15)
+LockButton.Size = UDim2.fromOffset(34, 30)
+LockButton.Position = UDim2.new(1, -85, 0.5, -15)
 LockButton.BackgroundColor3 = Color3.fromRGB(45, 25, 60)
 LockButton.Text = "🔓"
 LockButton.TextSize = 15
-LockButton.Font = Enum.Font.GothamBold
-LockButton.Parent = TopBar
+LockButton.Parent = Top
 
 local LockCorner = Instance.new("UICorner")
 LockCorner.CornerRadius = UDim.new(0, 7)
 LockCorner.Parent = LockButton
 
---==================================================
--- COLLAPSE BUTTON
---==================================================
-
 local CollapseButton = Instance.new("TextButton")
-CollapseButton.Size = UDim2.fromOffset(38, 30)
+CollapseButton.Size = UDim2.fromOffset(34, 30)
 CollapseButton.Position = UDim2.new(1, -44, 0.5, -15)
 CollapseButton.BackgroundColor3 = Color3.fromRGB(45, 25, 60)
 CollapseButton.Text = "—"
 CollapseButton.TextColor3 = Color3.new(1, 1, 1)
 CollapseButton.TextSize = 19
 CollapseButton.Font = Enum.Font.GothamBold
-CollapseButton.Parent = TopBar
+CollapseButton.Parent = Top
 
 local CollapseCorner = Instance.new("UICorner")
 CollapseCorner.CornerRadius = UDim.new(0, 7)
 CollapseCorner.Parent = CollapseButton
 
 --==================================================
--- SCROLLING CONTENT
+-- CONTENT
 --==================================================
 
 local Scroll = Instance.new("ScrollingFrame")
-Scroll.Name = "Content"
 Scroll.Size = UDim2.new(1, -12, 1, -55)
 Scroll.Position = UDim2.fromOffset(6, 51)
 Scroll.BackgroundTransparency = 1
@@ -183,238 +140,366 @@ Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Scroll.CanvasSize = UDim2.new()
 Scroll.Parent = Main
 
-local ScrollPadding = Instance.new("UIPadding")
-ScrollPadding.PaddingTop = UDim.new(0, 6)
-ScrollPadding.PaddingBottom = UDim.new(0, 10)
-ScrollPadding.PaddingLeft = UDim.new(0, 8)
-ScrollPadding.PaddingRight = UDim.new(0, 8)
-ScrollPadding.Parent = Scroll
+local Padding = Instance.new("UIPadding")
+Padding.PaddingTop = UDim.new(0, 6)
+Padding.PaddingBottom = UDim.new(0, 10)
+Padding.PaddingLeft = UDim.new(0, 8)
+Padding.PaddingRight = UDim.new(0, 8)
+Padding.Parent = Scroll
 
-local MainLayout = Instance.new("UIListLayout")
-MainLayout.Padding = UDim.new(0, 10)
-MainLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-MainLayout.SortOrder = Enum.SortOrder.LayoutOrder
-MainLayout.Parent = Scroll
+local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0, 10)
+Layout.SortOrder = Enum.SortOrder.LayoutOrder
+Layout.Parent = Scroll
 
---==================================================
--- SECTION CREATOR
---==================================================
+local SectionIndex = 0
 
-local SectionCount = 0
+local function Section(name, icon)
+	SectionIndex += 1
 
-local function CreateSection(Name, Icon)
-	SectionCount += 1
+	local Frame = Instance.new("Frame")
+	Frame.Size = UDim2.new(1, -4, 0, 0)
+	Frame.AutomaticSize = Enum.AutomaticSize.Y
+	Frame.BackgroundTransparency = 1
+	Frame.LayoutOrder = SectionIndex
+	Frame.Parent = Scroll
 
-	local SectionFrame = Instance.new("Frame")
-	SectionFrame.Name = Name:gsub("%W", "") .. "Section"
-	SectionFrame.Size = UDim2.new(1, -4, 0, 0)
-	SectionFrame.AutomaticSize = Enum.AutomaticSize.Y
-	SectionFrame.BackgroundTransparency = 1
-	SectionFrame.LayoutOrder = SectionCount
-	SectionFrame.Parent = Scroll
-
-	local SectionLayout = Instance.new("UIListLayout")
-	SectionLayout.Padding = UDim.new(0, 6)
-	SectionLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	SectionLayout.Parent = SectionFrame
+	local List = Instance.new("UIListLayout")
+	List.Padding = UDim.new(0, 6)
+	List.SortOrder = Enum.SortOrder.LayoutOrder
+	List.Parent = Frame
 
 	local Header = Instance.new("TextLabel")
-	Header.Name = "Header"
-	Header.Size = UDim2.new(1, 0, 0, 28)
+	Header.Size = UDim2.new(1, 0, 0, 27)
 	Header.BackgroundTransparency = 1
-	Header.Text = Icon .. "  " .. Name
+	Header.Text = icon .. "  " .. name
 	Header.TextColor3 = Color3.fromRGB(195, 125, 255)
 	Header.TextSize = 15
 	Header.Font = Enum.Font.GothamBold
 	Header.TextXAlignment = Enum.TextXAlignment.Left
 	Header.LayoutOrder = 1
-	Header.Parent = SectionFrame
+	Header.Parent = Frame
 
 	local Line = Instance.new("Frame")
 	Line.Size = UDim2.new(1, 0, 0, 1)
 	Line.BackgroundColor3 = Color3.fromRGB(65, 38, 85)
 	Line.BorderSizePixel = 0
 	Line.LayoutOrder = 2
-	Line.Parent = SectionFrame
+	Line.Parent = Frame
 
-	local Content = Instance.new("Frame")
-	Content.Name = "Controls"
-	Content.Size = UDim2.new(1, 0, 0, 0)
-	Content.AutomaticSize = Enum.AutomaticSize.Y
-	Content.BackgroundTransparency = 1
-	Content.LayoutOrder = 3
-	Content.Parent = SectionFrame
+	local Controls = Instance.new("Frame")
+	Controls.Size = UDim2.new(1, 0, 0, 0)
+	Controls.AutomaticSize = Enum.AutomaticSize.Y
+	Controls.BackgroundTransparency = 1
+	Controls.LayoutOrder = 3
+	Controls.Parent = Frame
 
-	local ContentLayout = Instance.new("UIListLayout")
-	ContentLayout.Padding = UDim.new(0, 6)
-	ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	ContentLayout.Parent = Content
+	local ControlLayout = Instance.new("UIListLayout")
+	ControlLayout.Padding = UDim.new(0, 6)
+	ControlLayout.Parent = Controls
 
-	return Content
+	return Controls
 end
 
---==================================================
--- BUTTON CREATOR
---==================================================
+local function Button(parent, text)
+	local B = Instance.new("TextButton")
+	B.Size = UDim2.new(1, 0, 0, 36)
+	B.BackgroundColor3 = Color3.fromRGB(32, 21, 42)
+	B.BorderSizePixel = 0
+	B.Text = text
+	B.TextColor3 = Color3.fromRGB(235, 225, 245)
+	B.TextSize = 14
+	B.Font = Enum.Font.GothamMedium
+	B.AutoButtonColor = false
+	B.Parent = parent
 
-local function CreateButton(Parent, Text)
-	local Button = Instance.new("TextButton")
+	local C = Instance.new("UICorner")
+	C.CornerRadius = UDim.new(0, 8)
+	C.Parent = B
 
-	Button.Size = UDim2.new(1, 0, 0, 36)
-	Button.BackgroundColor3 = Color3.fromRGB(32, 21, 42)
-	Button.BorderSizePixel = 0
-	Button.Text = Text
-	Button.TextColor3 = Color3.fromRGB(235, 225, 245)
-	Button.TextSize = 14
-	Button.Font = Enum.Font.GothamMedium
-	Button.AutoButtonColor = false
-	Button.LayoutOrder = 10
-	Button.Parent = Parent
+	local S = Instance.new("UIStroke")
+	S.Color = Color3.fromRGB(65, 38, 85)
+	S.Thickness = 1
+	S.Parent = B
 
-	local Corner = Instance.new("UICorner")
-	Corner.CornerRadius = UDim.new(0, 8)
-	Corner.Parent = Button
-
-	local Stroke = Instance.new("UIStroke")
-	Stroke.Color = Color3.fromRGB(65, 38, 85)
-	Stroke.Thickness = 1
-	Stroke.Parent = Button
-
-	Button.MouseEnter:Connect(function()
-		if not Button:GetAttribute("Enabled") then
-			Button.BackgroundColor3 =
-				Color3.fromRGB(43, 27, 57)
-		end
-	end)
-
-	Button.MouseLeave:Connect(function()
-		if Button:GetAttribute("Enabled") then
-			Button.BackgroundColor3 =
-				Color3.fromRGB(75, 35, 110)
-		else
-			Button.BackgroundColor3 =
-				Color3.fromRGB(32, 21, 42)
-		end
-	end)
-
-	return Button
+	return B
 end
 
-local function SetToggle(Button, Name, State)
-	Button:SetAttribute("Enabled", State)
+local function ToggleText(button, name, state)
+	button.Text = name .. "     [ " .. (state and "ON" or "OFF") .. " ]"
 
-	Button.Text =
-		Name .. "     [ " ..
-		(State and "ON" or "OFF") ..
-		" ]"
-
-	Button.BackgroundColor3 =
-		State
+	button.BackgroundColor3 =
+		state
 		and Color3.fromRGB(75, 35, 110)
 		or Color3.fromRGB(32, 21, 42)
 end
 
 --==================================================
--- MOVEMENT / CHARACTER
+-- SECTIONS
 --==================================================
 
-local Movement = CreateSection(
-	"Movement / Character",
-	"🏃"
-)
+local Movement = Section("Movement / Character", "🏃")
 
-local NoclipButton = CreateButton(
-	Movement,
-	"Noclip     [ OFF ]"
-)
+local NoclipButton =
+	Button(Movement, "Noclip     [ OFF ]")
 
-local InvisibilityButton = CreateButton(
-	Movement,
-	"Invisibility     [ OFF ]"
-)
+local InvisButton =
+	Button(Movement, "Invisibility     [ OFF ]")
 
-local SpeedButton = CreateButton(
-	Movement,
-	"WalkSpeed: 16"
-)
+local SpeedButton =
+	Button(Movement, "WalkSpeed: 16")
 
-local InfiniteJumpButton = CreateButton(
-	Movement,
-	"Infinite Jump     [ OFF ]"
-)
+local JumpButton =
+	Button(Movement, "Infinite Jump     [ OFF ]")
 
---==================================================
--- HIGHLIGHTING
---==================================================
+local Highlighting = Section("Highlighting", "✨")
 
-local HighlightSection = CreateSection(
-	"Highlighting",
-	"✨"
-)
+local AllHighlightButton =
+	Button(Highlighting, "All Highlight     [ OFF ]")
 
-local AllButton = CreateButton(
-	HighlightSection,
-	"All Highlight     [ OFF ]"
-)
+local TeamHighlightButton =
+	Button(Highlighting, "Team Highlight     [ OFF ]")
 
-local TeamButton = CreateButton(
-	HighlightSection,
-	"Team Highlight     [ OFF ]"
-)
-
-local HPButton = CreateButton(
-	HighlightSection,
-	"HP Bar     [ OFF ]"
-)
+local HPButton =
+	Button(Highlighting, "HP Bar     [ OFF ]")
 
 --==================================================
--- VISUAL STORAGE
+-- FPS / PING
 --==================================================
 
-local VisualFolder = Instance.new("Folder")
-VisualFolder.Name = "VexHubVisuals"
-VisualFolder.Parent = ScreenGui
+local frameCount = 0
+local fpsTimer = os.clock()
 
-local Visuals = {}
+RunService.RenderStepped:Connect(function()
+	frameCount += 1
+
+	local now = os.clock()
+
+	if now - fpsTimer >= 1 then
+		local fps = math.floor(
+			frameCount / (now - fpsTimer) + 0.5
+		)
+
+		local ping = math.floor(
+			LocalPlayer:GetNetworkPing() * 1000 + 0.5
+		)
+
+		StatsLabel.Text =
+			"FPS: " .. fps .. " | MS: " .. ping
+
+		frameCount = 0
+		fpsTimer = now
+	end
+end)
 
 --==================================================
--- REMOVE PLAYER VISUAL
+-- NOCLIP
 --==================================================
 
-local function RemoveVisual(Player)
-	local Data = Visuals[Player]
+NoclipButton.MouseButton1Click:Connect(function()
+	Settings.Noclip = not Settings.Noclip
 
-	if not Data then
+	ToggleText(
+		NoclipButton,
+		"Noclip",
+		Settings.Noclip
+	)
+end)
+
+-- 10-frame noclip update
+local noclipFrames = 0
+
+RunService.Stepped:Connect(function()
+	noclipFrames += 1
+
+	if noclipFrames < 10 then
 		return
 	end
 
-	if Data.Highlight then
-		Data.Highlight:Destroy()
+	noclipFrames = 0
+
+	if not Settings.Noclip then
+		return
 	end
 
-	if Data.HP then
-		Data.HP:Destroy()
+	local Character = LocalPlayer.Character
+
+	if not Character then
+		return
 	end
 
-	if Data.HealthConnection then
-		Data.HealthConnection:Disconnect()
+	for _, object in ipairs(Character:GetDescendants()) do
+		if object:IsA("BasePart") then
+			object.CanCollide = false
+		end
+	end
+end)
+
+--==================================================
+-- WALKSPEED
+--==================================================
+
+SpeedButton.MouseButton1Click:Connect(function()
+	Settings.WalkSpeed += 4
+
+	if Settings.WalkSpeed > 100 then
+		Settings.WalkSpeed = 4
 	end
 
-	Visuals[Player] = nil
+	SpeedButton.Text =
+		"WalkSpeed: " .. Settings.WalkSpeed
+end)
+
+local function ApplySpeed()
+	local Character = LocalPlayer.Character
+
+	if not Character then
+		return
+	end
+
+	local Humanoid =
+		Character:FindFirstChildOfClass("Humanoid")
+
+	if Humanoid then
+		Humanoid.WalkSpeed = Settings.WalkSpeed
+	end
 end
 
+ApplySpeed()
+
 --==================================================
--- HIGHLIGHT CHECK
+-- INFINITE JUMP
 --==================================================
 
-local function ShouldHighlight(Player)
-	if Player == LocalPlayer then
+JumpButton.MouseButton1Click:Connect(function()
+	Settings.InfiniteJump =
+		not Settings.InfiniteJump
+
+	ToggleText(
+		JumpButton,
+		"Infinite Jump",
+		Settings.InfiniteJump
+	)
+end)
+
+UserInputService.JumpRequest:Connect(function()
+	if not Settings.InfiniteJump then
+		return
+	end
+
+	local Character = LocalPlayer.Character
+
+	if not Character then
+		return
+	end
+
+	local Humanoid =
+		Character:FindFirstChildOfClass("Humanoid")
+
+	if Humanoid then
+		Humanoid:ChangeState(
+			Enum.HumanoidStateType.Jumping
+		)
+	end
+end)
+
+--==================================================
+-- HIGHLIGHTS
+--==================================================
+
+local Visuals = {}
+
+local function RemoveVisual(player)
+	local data = Visuals[player]
+
+	if not data then
+		return
+	end
+
+	if data.Highlight then
+		data.Highlight:Destroy()
+	end
+
+	if data.HP then
+		data.HP:Destroy()
+	end
+
+	if data.HealthConnection then
+		data.HealthConnection:Disconnect()
+	end
+
+	Visuals[player] = nil
+end
+
+local function CreateHP(player, character, humanoid)
+	local root =
+		character:FindFirstChild("HumanoidRootPart")
+
+	if not root then
+		return nil, nil
+	end
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "VexHP"
+	gui.Adornee = root
+	gui.Size = UDim2.fromOffset(8, 65)
+	gui.StudsOffset = Vector3.new(-2.5, 0, 0)
+	gui.AlwaysOnTop = true
+	gui.Parent = root
+
+	local background = Instance.new("Frame")
+	background.Size = UDim2.fromScale(1, 1)
+	background.BackgroundColor3 =
+		Color3.fromRGB(25, 20, 30)
+	background.BorderSizePixel = 0
+	background.Parent = gui
+
+	local bgCorner = Instance.new("UICorner")
+	bgCorner.CornerRadius = UDim.new(1, 0)
+	bgCorner.Parent = background
+
+	local fill = Instance.new("Frame")
+	fill.AnchorPoint = Vector2.new(0, 1)
+	fill.Position = UDim2.fromScale(0, 1)
+	fill.Size = UDim2.fromScale(1, 1)
+	fill.BackgroundColor3 =
+		Color3.fromRGB(170, 70, 255)
+	fill.BorderSizePixel = 0
+	fill.Parent = background
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(1, 0)
+	fillCorner.Parent = fill
+
+	local function update()
+		local maxHealth =
+			math.max(humanoid.MaxHealth, 1)
+
+		local percent =
+			math.clamp(
+				humanoid.Health / maxHealth,
+				0,
+				1
+			)
+
+		fill.Size =
+			UDim2.new(1, 0, percent, 0)
+	end
+
+	update()
+
+	local connection =
+		humanoid.HealthChanged:Connect(update)
+
+	return gui, connection
+end
+
+local function ShouldHighlight(player)
+	if player == LocalPlayer then
 		return false
 	end
 
-	local Character = Player.Character
-
-	if not Character or not Character.Parent then
+	if not player.Character then
 		return false
 	end
 
@@ -423,184 +508,103 @@ local function ShouldHighlight(Player)
 	end
 
 	if Settings.TeamHighlight then
-		return Player.Team ~= nil
-			and LocalPlayer.Team ~= nil
-			and Player.Team == LocalPlayer.Team
+		return
+			LocalPlayer.Team ~= nil
+			and player.Team ~= nil
+			and player.Team == LocalPlayer.Team
 	end
 
 	return false
 end
 
---==================================================
--- HP BAR
---==================================================
+local VisualFolder = Instance.new("Folder")
+VisualFolder.Name = "VexHubVisuals"
+VisualFolder.Parent = Gui
 
-local function CreateHPBar(Player, Character, Humanoid)
-	local Root =
-		Character:FindFirstChild("HumanoidRootPart")
-
-	if not Root then
-		return nil, nil
-	end
-
-	local Billboard = Instance.new("BillboardGui")
-	Billboard.Name = "VexHP"
-	Billboard.Adornee = Root
-	Billboard.Size = UDim2.fromOffset(8, 70)
-	Billboard.StudsOffset = Vector3.new(-2.5, 0, 0)
-	Billboard.AlwaysOnTop = true
-	Billboard.Parent = Root
-
-	local Background = Instance.new("Frame")
-	Background.Size = UDim2.fromScale(1, 1)
-	Background.BackgroundColor3 =
-		Color3.fromRGB(25, 20, 30)
-	Background.BorderSizePixel = 0
-	Background.Parent = Billboard
-
-	local BGCorner = Instance.new("UICorner")
-	BGCorner.CornerRadius = UDim.new(1, 0)
-	BGCorner.Parent = Background
-
-	local Fill = Instance.new("Frame")
-	Fill.AnchorPoint = Vector2.new(0, 1)
-	Fill.Position = UDim2.fromScale(0, 1)
-	Fill.Size = UDim2.fromScale(1, 1)
-	Fill.BackgroundColor3 =
-		Color3.fromRGB(170, 70, 255)
-	Fill.BorderSizePixel = 0
-	Fill.Parent = Background
-
-	local FillCorner = Instance.new("UICorner")
-	FillCorner.CornerRadius = UDim.new(1, 0)
-	FillCorner.Parent = Fill
-
-	local function UpdateHealth()
-		local MaxHealth =
-			math.max(Humanoid.MaxHealth, 1)
-
-		local Percent =
-			math.clamp(
-				Humanoid.Health / MaxHealth,
-				0,
-				1
-			)
-
-		Fill.Size =
-			UDim2.new(
-				1,
-				0,
-				Percent,
-				0
-			)
-	end
-
-	UpdateHealth()
-
-	local Connection =
-		Humanoid.HealthChanged:Connect(UpdateHealth)
-
-	return Billboard, Connection
-end
-
---==================================================
--- CREATE PLAYER VISUAL
---==================================================
-
-local function CreateVisual(Player)
-	if Player == LocalPlayer then
+local function UpdatePlayerVisual(player)
+	if player == LocalPlayer then
 		return
 	end
 
-	local Character = Player.Character
+	local character = player.Character
 
-	if not Character or not Character.Parent then
-		RemoveVisual(Player)
+	if not character or not character.Parent then
+		RemoveVisual(player)
 		return
 	end
 
-	if not ShouldHighlight(Player) then
-		RemoveVisual(Player)
+	if not ShouldHighlight(player) then
+		RemoveVisual(player)
 		return
 	end
 
-	local Humanoid =
-		Character:FindFirstChildOfClass("Humanoid")
+	local humanoid =
+		character:FindFirstChildOfClass("Humanoid")
 
-	if not Humanoid then
+	if not humanoid then
 		return
 	end
 
-	local Existing = Visuals[Player]
+	local existing = Visuals[player]
 
-	if Existing
-		and Existing.Character ~= Character then
-
-		RemoveVisual(Player)
-		Existing = nil
+	if existing and existing.Character ~= character then
+		RemoveVisual(player)
+		existing = nil
 	end
 
-	if not Existing then
+	if not existing then
+		local highlight = Instance.new("Highlight")
 
-		local Highlight = Instance.new("Highlight")
-
-		Highlight.Name = "VexHighlight"
-		Highlight.Adornee = Character
-
-		Highlight.FillColor =
+		highlight.Name = "VexHighlight"
+		highlight.Adornee = character
+		highlight.FillColor =
 			Color3.fromRGB(155, 55, 255)
-
-		Highlight.OutlineColor =
+		highlight.OutlineColor =
 			Color3.fromRGB(220, 170, 255)
-
-		Highlight.FillTransparency = 0.5
-		Highlight.OutlineTransparency = 0
-
-		Highlight.DepthMode =
+		highlight.FillTransparency = 0.5
+		highlight.OutlineTransparency = 0
+		highlight.DepthMode =
 			Enum.HighlightDepthMode.AlwaysOnTop
+		highlight.Parent = VisualFolder
 
-		Highlight.Parent = VisualFolder
-
-		local HP
-		local HealthConnection
+		local hp
+		local healthConnection
 
 		if Settings.HPBar then
-			HP, HealthConnection =
-				CreateHPBar(
-					Player,
-					Character,
-					Humanoid
+			hp, healthConnection =
+				CreateHP(
+					player,
+					character,
+					humanoid
 				)
 		end
 
-		Visuals[Player] = {
-			Character = Character,
-			Highlight = Highlight,
-			HP = HP,
-			HealthConnection = HealthConnection,
+		Visuals[player] = {
+			Character = character,
+			Highlight = highlight,
+			HP = hp,
+			HealthConnection = healthConnection,
 		}
 
 		return
 	end
 
-	if Settings.HPBar and not Existing.HP then
-
-		Existing.HP,
-		Existing.HealthConnection =
-			CreateHPBar(
-				Player,
-				Character,
-				Humanoid
+	if Settings.HPBar and not existing.HP then
+		existing.HP,
+		existing.HealthConnection =
+			CreateHP(
+				player,
+				character,
+				humanoid
 			)
 
-	elseif not Settings.HPBar and Existing.HP then
+	elseif not Settings.HPBar and existing.HP then
+		existing.HP:Destroy()
+		existing.HP = nil
 
-		Existing.HP:Destroy()
-		Existing.HP = nil
-
-		if Existing.HealthConnection then
-			Existing.HealthConnection:Disconnect()
-			Existing.HealthConnection = nil
+		if existing.HealthConnection then
+			existing.HealthConnection:Disconnect()
+			existing.HealthConnection = nil
 		end
 	end
 end
@@ -609,79 +613,57 @@ end
 -- PLAYER TRACKING
 --==================================================
 
-local function SetupPlayer(Player)
-	if Player == LocalPlayer then
+local function SetupPlayer(player)
+	if player == LocalPlayer then
 		return
 	end
 
-	Player.CharacterAdded:Connect(function(Character)
-
-		RemoveVisual(Player)
+	player.CharacterAdded:Connect(function(character)
+		RemoveVisual(player)
 
 		task.spawn(function()
-
-			Character:WaitForChild(
-				"Humanoid",
-				5
-			)
-
-			Character:WaitForChild(
-				"HumanoidRootPart",
-				5
-			)
+			character:WaitForChild("Humanoid", 5)
+			character:WaitForChild("HumanoidRootPart", 5)
 
 			task.wait()
 
-			CreateVisual(Player)
+			UpdatePlayerVisual(player)
 		end)
 	end)
 
-	Player.CharacterRemoving:Connect(function()
-		RemoveVisual(Player)
+	player.CharacterRemoving:Connect(function()
+		RemoveVisual(player)
 	end)
 
-	Player:GetPropertyChangedSignal(
-		"Team"
-	):Connect(function()
-
-		CreateVisual(Player)
+	player:GetPropertyChangedSignal("Team"):Connect(function()
+		UpdatePlayerVisual(player)
 	end)
 
-	if Player.Character then
-		CreateVisual(Player)
+	if player.Character then
+		UpdatePlayerVisual(player)
 	end
 end
 
-for _, Player in ipairs(
-	Players:GetPlayers()
-) do
-	SetupPlayer(Player)
+for _, player in ipairs(Players:GetPlayers()) do
+	SetupPlayer(player)
 end
 
 Players.PlayerAdded:Connect(SetupPlayer)
 
-Players.PlayerRemoving:Connect(function(Player)
-	RemoveVisual(Player)
+Players.PlayerRemoving:Connect(function(player)
+	RemoveVisual(player)
 end)
 
---==================================================
--- CONTINUOUS VISUAL REFRESH
---==================================================
-
+-- Refresh visuals without RenderStepped
 task.spawn(function()
-
-	while ScreenGui.Parent do
-
-		for _, Player in ipairs(
-			Players:GetPlayers()
-		) do
-
-			if Player ~= LocalPlayer then
-				CreateVisual(Player)
+	while Gui.Parent do
+		if Settings.AllHighlight or Settings.TeamHighlight then
+			for _, player in ipairs(Players:GetPlayers()) do
+				UpdatePlayerVisual(player)
 			end
 		end
 
-		task.wait(0.25)
+		task.wait(0.3)
 	end
 end)
 
@@ -689,8 +671,7 @@ end)
 -- ALL HIGHLIGHT
 --==================================================
 
-AllButton.MouseButton1Click:Connect(function()
-
+AllHighlightButton.MouseButton1Click:Connect(function()
 	Settings.AllHighlight =
 		not Settings.AllHighlight
 
@@ -698,14 +679,14 @@ AllButton.MouseButton1Click:Connect(function()
 		Settings.TeamHighlight = false
 	end
 
-	SetToggle(
-		AllButton,
+	ToggleText(
+		AllHighlightButton,
 		"All Highlight",
 		Settings.AllHighlight
 	)
 
-	SetToggle(
-		TeamButton,
+	ToggleText(
+		TeamHighlightButton,
 		"Team Highlight",
 		Settings.TeamHighlight
 	)
@@ -715,8 +696,7 @@ end)
 -- TEAM HIGHLIGHT
 --==================================================
 
-TeamButton.MouseButton1Click:Connect(function()
-
+TeamHighlightButton.MouseButton1Click:Connect(function()
 	Settings.TeamHighlight =
 		not Settings.TeamHighlight
 
@@ -724,14 +704,14 @@ TeamButton.MouseButton1Click:Connect(function()
 		Settings.AllHighlight = false
 	end
 
-	SetToggle(
-		AllButton,
+	ToggleText(
+		AllHighlightButton,
 		"All Highlight",
 		Settings.AllHighlight
 	)
 
-	SetToggle(
-		TeamButton,
+	ToggleText(
+		TeamHighlightButton,
 		"Team Highlight",
 		Settings.TeamHighlight
 	)
@@ -742,290 +722,118 @@ end)
 --==================================================
 
 HPButton.MouseButton1Click:Connect(function()
-
 	Settings.HPBar =
 		not Settings.HPBar
 
-	SetToggle(
+	ToggleText(
 		HPButton,
 		"HP Bar",
 		Settings.HPBar
 	)
-end)
 
---==================================================
--- NOCLIP
---==================================================
-
-NoclipButton.MouseButton1Click:Connect(function()
-
-	Settings.Noclip =
-		not Settings.Noclip
-
-	SetToggle(
-		NoclipButton,
-		"Noclip",
-		Settings.Noclip
-	)
-end)
-
-RunService.Stepped:Connect(function()
-
-	if not Settings.Noclip then
-		return
-	end
-
-	local Character =
-		LocalPlayer.Character
-
-	if not Character then
-		return
-	end
-
-	for _, Object in ipairs(
-		Character:GetDescendants()
-	) do
-
-		if Object:IsA("BasePart") then
-			Object.CanCollide = false
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			UpdatePlayerVisual(player)
 		end
 	end
 end)
 
 --==================================================
--- WALKSPEED
+-- CLIENT VISUAL INVISIBILITY
 --==================================================
 
-SpeedButton.MouseButton1Click:Connect(function()
+local Hidden = {}
 
-	Settings.WalkSpeed += 4
+local function HideCharacter(character)
+	for _, object in ipairs(character:GetDescendants()) do
 
-	if Settings.WalkSpeed > 100 then
-		Settings.WalkSpeed = 4
-	end
+		if object:IsA("BasePart") then
+			if object.Name ~= "HumanoidRootPart" then
 
-	SpeedButton.Text =
-		"WalkSpeed: " ..
-		Settings.WalkSpeed
-end)
+				if Hidden[object] == nil then
+					Hidden[object] =
+						object.LocalTransparencyModifier
+				end
 
-RunService.Heartbeat:Connect(function()
+				object.LocalTransparencyModifier = 1
+			end
 
-	local Character =
-		LocalPlayer.Character
+		elseif object:IsA("Decal")
+			or object:IsA("Texture") then
 
-	if not Character then
-		return
-	end
+			if Hidden[object] == nil then
+				Hidden[object] = object.Transparency
+			end
 
-	local Humanoid =
-		Character:FindFirstChildOfClass(
-			"Humanoid"
-		)
-
-	if Humanoid then
-		Humanoid.WalkSpeed =
-			Settings.WalkSpeed
-	end
-end)
-
---==================================================
--- INFINITE JUMP
---==================================================
-
-InfiniteJumpButton.MouseButton1Click:Connect(function()
-
-	Settings.InfiniteJump =
-		not Settings.InfiniteJump
-
-	SetToggle(
-		InfiniteJumpButton,
-		"Infinite Jump",
-		Settings.InfiniteJump
-	)
-end)
-
-UserInputService.JumpRequest:Connect(function()
-
-	if not Settings.InfiniteJump then
-		return
-	end
-
-	local Character =
-		LocalPlayer.Character
-
-	if not Character then
-		return
-	end
-
-	local Humanoid =
-		Character:FindFirstChildOfClass(
-			"Humanoid"
-		)
-
-	if Humanoid then
-		Humanoid:ChangeState(
-			Enum.HumanoidStateType.Jumping
-		)
-	end
-end)
-
---==================================================
--- CAMERA-SAFE INVISIBILITY
---==================================================
-
-local HiddenObjects = {}
-
-local function HideObject(Object)
-	if HiddenObjects[Object] == nil then
-
-		if Object:IsA("BasePart") then
-			HiddenObjects[Object] =
-				Object.LocalTransparencyModifier
-
-		elseif Object:IsA("Decal")
-			or Object:IsA("Texture") then
-
-			HiddenObjects[Object] =
-				Object.Transparency
-		end
-	end
-
-	if Object:IsA("BasePart") then
-		Object.LocalTransparencyModifier = 1
-
-	elseif Object:IsA("Decal")
-		or Object:IsA("Texture") then
-
-		Object.Transparency = 1
-	end
-end
-
-local function ShowObject(Object)
-	local Original = HiddenObjects[Object]
-
-	if Original == nil then
-		return
-	end
-
-	if Object:IsA("BasePart") then
-		Object.LocalTransparencyModifier = Original
-
-	elseif Object:IsA("Decal")
-		or Object:IsA("Texture") then
-
-		Object.Transparency = Original
-	end
-end
-
-local function HideCharacter(Character)
-
-	for _, Object in ipairs(
-		Character:GetDescendants()
-	) do
-
-		if Object:IsA("BasePart")
-			and Object.Name ~= "HumanoidRootPart" then
-
-			HideObject(Object)
-
-		elseif Object:IsA("Decal")
-			or Object:IsA("Texture") then
-
-			HideObject(Object)
+			object.Transparency = 1
 		end
 	end
 end
 
-local function RestoreCharacter(Character)
-
-	for Object in pairs(HiddenObjects) do
-
-		if Object and Object.Parent then
-			ShowObject(Object)
+local function RestoreCharacter()
+	for object, value in pairs(Hidden) do
+		if object and object.Parent then
+			if object:IsA("BasePart") then
+				object.LocalTransparencyModifier = value
+			elseif object:IsA("Decal")
+				or object:IsA("Texture") then
+				object.Transparency = value
+			end
 		end
 	end
 
-	table.clear(HiddenObjects)
+	table.clear(Hidden)
 end
 
-InvisibilityButton.MouseButton1Click:Connect(function()
-
+InvisButton.MouseButton1Click:Connect(function()
 	Settings.Invisibility =
 		not Settings.Invisibility
 
-	SetToggle(
-		InvisibilityButton,
+	ToggleText(
+		InvisButton,
 		"Invisibility",
 		Settings.Invisibility
 	)
 
-	local Character =
-		LocalPlayer.Character
+	local character = LocalPlayer.Character
 
-	if not Character then
+	if not character then
 		return
 	end
 
 	if Settings.Invisibility then
-		HideCharacter(Character)
+		HideCharacter(character)
 	else
-		RestoreCharacter(Character)
-	end
-end)
-
--- Keep visual hiding active without changing
--- character position, root position, or camera.
-
-RunService.RenderStepped:Connect(function()
-
-	if not Settings.Invisibility then
-		return
-	end
-
-	local Character =
-		LocalPlayer.Character
-
-	if Character then
-		HideCharacter(Character)
+		RestoreCharacter()
 	end
 end)
 
 --==================================================
--- LOCAL PLAYER RESPAWN
+-- RESPAWN
 --==================================================
 
-LocalPlayer.CharacterAdded:Connect(function(Character)
-
-	table.clear(HiddenObjects)
+LocalPlayer.CharacterAdded:Connect(function(character)
+	table.clear(Hidden)
 
 	task.spawn(function()
-
-		local Humanoid =
-			Character:WaitForChild(
-				"Humanoid",
-				5
-			)
+		local humanoid =
+			character:WaitForChild("Humanoid", 5)
 
 		task.wait()
 
-		if Humanoid then
-			Humanoid.WalkSpeed =
+		if humanoid then
+			humanoid.WalkSpeed =
 				Settings.WalkSpeed
 		end
 
 		if Settings.Invisibility then
-			HideCharacter(Character)
+			HideCharacter(character)
 		end
 
 		if Settings.Noclip then
-
-			for _, Object in ipairs(
-				Character:GetDescendants()
-			) do
-
-				if Object:IsA("BasePart") then
-					Object.CanCollide = false
+			for _, object in ipairs(character:GetDescendants()) do
+				if object:IsA("BasePart") then
+					object.CanCollide = false
 				end
 			end
 		end
@@ -1039,37 +847,21 @@ end)
 local Collapsed = false
 
 CollapseButton.MouseButton1Click:Connect(function()
-
 	Collapsed = not Collapsed
 
 	if Collapsed then
-
 		Scroll.Visible = false
-
-		Main.Size =
-			UDim2.fromOffset(
-				430,
-				46
-			)
-
+		Main.Size = UDim2.fromOffset(440, 46)
 		CollapseButton.Text = "+"
-
 	else
-
 		Scroll.Visible = true
-
-		Main.Size =
-			UDim2.fromOffset(
-				430,
-				365
-			)
-
+		Main.Size = UDim2.fromOffset(440, 370)
 		CollapseButton.Text = "—"
 	end
 end)
 
 --==================================================
--- DRAGGING
+-- DRAGGING + LOCK
 --==================================================
 
 local Locked = false
@@ -1078,94 +870,59 @@ local DragStart
 local StartPosition
 local DragInput
 
-TopBar.InputBegan:Connect(function(Input)
+LockButton.MouseButton1Click:Connect(function()
+	Locked = not Locked
 
+	LockButton.Text = Locked and "🔒" or "🔓"
+
+	LockButton.BackgroundColor3 =
+		Locked
+		and Color3.fromRGB(90, 40, 125)
+		or Color3.fromRGB(45, 25, 60)
+end)
+
+Top.InputBegan:Connect(function(input)
 	if Locked then
 		return
 	end
 
-	if Input.UserInputType ==
-		Enum.UserInputType.MouseButton1
-		or Input.UserInputType ==
-		Enum.UserInputType.Touch then
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
 
 		Dragging = true
-		DragStart = Input.Position
+		DragStart = input.Position
 		StartPosition = Main.Position
 	end
 end)
 
-TopBar.InputChanged:Connect(function(Input)
+Top.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
 
-	if Input.UserInputType ==
-		Enum.UserInputType.MouseMovement
-		or Input.UserInputType ==
-		Enum.UserInputType.Touch then
-
-		DragInput = Input
+		DragInput = input
 	end
 end)
 
-UserInputService.InputChanged:Connect(function(Input)
-
-	if Input == DragInput
-		and Dragging
-		and not Locked then
-
-		local Delta =
-			Input.Position - DragStart
+UserInputService.InputChanged:Connect(function(input)
+	if input == DragInput and Dragging and not Locked then
+		local delta =
+			input.Position - DragStart
 
 		Main.Position = UDim2.new(
 			StartPosition.X.Scale,
-			StartPosition.X.Offset + Delta.X,
-
+			StartPosition.X.Offset + delta.X,
 			StartPosition.Y.Scale,
-			StartPosition.Y.Offset + Delta.Y
+			StartPosition.Y.Offset + delta.Y
 		)
 	end
 end)
 
-UserInputService.InputEnded:Connect(function(Input)
-
-	if Input.UserInputType ==
-		Enum.UserInputType.MouseButton1
-		or Input.UserInputType ==
-		Enum.UserInputType.Touch then
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
 
 		Dragging = false
 	end
 end)
 
---==================================================
--- GUI LOCK
---==================================================
-
-LockButton.MouseButton1Click:Connect(function()
-
-	Locked = not Locked
-
-	if Locked then
-
-		LockButton.Text = "🔒"
-
-		LockButton.BackgroundColor3 =
-			Color3.fromRGB(
-				90,
-				40,
-				125
-			)
-
-	else
-
-		LockButton.Text = "🔓"
-
-		LockButton.BackgroundColor3 =
-			Color3.fromRGB(
-				45,
-				25,
-				60
-			)
-	end
-end)
-
-print("Vex Hub loaded successfully 💜")
+print("💜 Vex Hub loaded")
