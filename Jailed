@@ -1,0 +1,829 @@
+--// VEX HUB
+--// Full GUI / Movement / Highlight / Aim Assist
+
+--// SERVICES
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local Camera = workspace.CurrentCamera
+
+--// SETTINGS
+local Settings = {
+	Noclip = false,
+	WalkSpeed = 16,
+	InfiniteJump = false,
+
+	AllHighlight = false,
+	TeamHighlight = false,
+	HPBar = false,
+
+	Aim = false,
+	UpdateRate = 5,
+	Smoothness = 5,
+	AimPart = "Head",
+	FOV = 90,
+	TeamCheck = true,
+}
+
+--// GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VexHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = PlayerGui
+
+--// MAIN FRAME
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Size = UDim2.new(0, 300, 0, 430)
+Main.Position = UDim2.new(1, -320, 0.5, -215)
+Main.BackgroundColor3 = Color3.fromRGB(18, 12, 25)
+Main.BorderSizePixel = 0
+Main.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = Main
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(150, 70, 255)
+Stroke.Thickness = 1.5
+Stroke.Parent = Main
+
+--// TOP BAR
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 45)
+TopBar.BackgroundColor3 = Color3.fromRGB(28, 17, 38)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = Main
+
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 12)
+TopCorner.Parent = TopBar
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -105, 1, 0)
+Title.Position = UDim2.new(0, 14, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Vex Hub"
+Title.TextColor3 = Color3.fromRGB(220, 180, 255)
+Title.TextSize = 20
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
+
+--// LOCK BUTTON
+local LockButton = Instance.new("TextButton")
+LockButton.Size = UDim2.new(0, 40, 0, 30)
+LockButton.Position = UDim2.new(1, -90, 0.5, -15)
+LockButton.BackgroundColor3 = Color3.fromRGB(45, 25, 60)
+LockButton.Text = "🔓"
+LockButton.TextSize = 16
+LockButton.Font = Enum.Font.GothamBold
+LockButton.Parent = TopBar
+
+local LockCorner = Instance.new("UICorner")
+LockCorner.CornerRadius = UDim.new(0, 7)
+LockCorner.Parent = LockButton
+
+--// COLLAPSE BUTTON
+local CollapseButton = Instance.new("TextButton")
+CollapseButton.Size = UDim2.new(0, 40, 0, 30)
+CollapseButton.Position = UDim2.new(1, -45, 0.5, -15)
+CollapseButton.BackgroundColor3 = Color3.fromRGB(45, 25, 60)
+CollapseButton.Text = "—"
+CollapseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CollapseButton.TextSize = 20
+CollapseButton.Font = Enum.Font.GothamBold
+CollapseButton.Parent = TopBar
+
+local CollapseCorner = Instance.new("UICorner")
+CollapseCorner.CornerRadius = UDim.new(0, 7)
+CollapseCorner.Parent = CollapseButton
+
+--// SCROLLING CONTENT
+local Scroll = Instance.new("ScrollingFrame")
+Scroll.Name = "Content"
+Scroll.Size = UDim2.new(1, -12, 1, -55)
+Scroll.Position = UDim2.new(0, 6, 0, 50)
+Scroll.BackgroundTransparency = 1
+Scroll.BorderSizePixel = 0
+Scroll.ScrollBarThickness = 4
+Scroll.ScrollBarImageColor3 = Color3.fromRGB(145, 70, 255)
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Scroll.Parent = Main
+
+local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0, 7)
+Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+Layout.Parent = Scroll
+
+local Padding = Instance.new("UIPadding")
+Padding.PaddingTop = UDim.new(0, 4)
+Padding.PaddingBottom = UDim.new(0, 8)
+Padding.PaddingLeft = UDim.new(0, 6)
+Padding.PaddingRight = UDim.new(0, 6)
+Padding.Parent = Scroll
+
+--// HELPERS
+local function Section(text)
+	local Label = Instance.new("TextLabel")
+	Label.Size = UDim2.new(1, -8, 0, 28)
+	Label.BackgroundTransparency = 1
+	Label.Text = text
+	Label.TextColor3 = Color3.fromRGB(190, 120, 255)
+	Label.TextSize = 15
+	Label.Font = Enum.Font.GothamBold
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+	Label.Parent = Scroll
+	return Label
+end
+
+local function Button(text)
+	local B = Instance.new("TextButton")
+	B.Size = UDim2.new(1, -8, 0, 38)
+	B.BackgroundColor3 = Color3.fromRGB(32, 21, 42)
+	B.TextColor3 = Color3.fromRGB(235, 225, 245)
+	B.TextSize = 14
+	B.Font = Enum.Font.GothamMedium
+	B.Text = text
+	B.AutoButtonColor = false
+	B.Parent = Scroll
+
+	local C = Instance.new("UICorner")
+	C.CornerRadius = UDim.new(0, 8)
+	C.Parent = B
+
+	local S = Instance.new("UIStroke")
+	S.Color = Color3.fromRGB(65, 38, 85)
+	S.Thickness = 1
+	S.Parent = B
+
+	return B
+end
+
+local function Toggle(text, callback)
+	local B = Button(text .. "     [ OFF ]")
+	local enabled = false
+
+	B.MouseButton1Click:Connect(function()
+		enabled = not enabled
+		B.Text = text .. (enabled and "     [ ON ]" or "     [ OFF ]")
+		B.BackgroundColor3 = enabled
+			and Color3.fromRGB(75, 35, 110)
+			or Color3.fromRGB(32, 21, 42)
+
+		callback(enabled)
+	end)
+
+	return B
+end
+
+local function ValueButton(text, value, callback)
+	local B = Button(text .. ": " .. tostring(value))
+
+	B.MouseButton1Click:Connect(function()
+		value = callback(value)
+		B.Text = text .. ": " .. tostring(value)
+	end)
+
+	return B
+end
+
+--// MOVEMENT
+Section("🏃  MOVEMENT / CHARACTER")
+
+Toggle("Noclip", function(v)
+	Settings.Noclip = v
+end)
+
+local SpeedButton = Button("WalkSpeed: 16")
+
+SpeedButton.MouseButton1Click:Connect(function()
+	Settings.WalkSpeed += 4
+
+	if Settings.WalkSpeed > 100 then
+		Settings.WalkSpeed = 4
+	end
+
+	SpeedButton.Text = "WalkSpeed: " .. Settings.WalkSpeed
+end)
+
+Toggle("Infinite Jump", function(v)
+	Settings.InfiniteJump = v
+end)
+
+--// HIGHLIGHTING
+Section("✨  HIGHLIGHTING")
+
+local AllButton
+local TeamButton
+
+local function SetHighlightMode(mode)
+	if mode == "All" then
+		Settings.AllHighlight = not Settings.AllHighlight
+
+		if Settings.AllHighlight then
+			Settings.TeamHighlight = false
+		end
+	elseif mode == "Team" then
+		Settings.TeamHighlight = not Settings.TeamHighlight
+
+		if Settings.TeamHighlight then
+			Settings.AllHighlight = false
+		end
+	end
+
+	if AllButton then
+		AllButton.Text = "All Highlight     [ "
+			.. (Settings.AllHighlight and "ON" or "OFF")
+			.. " ]"
+	end
+
+	if TeamButton then
+		TeamButton.Text = "Team Highlight     [ "
+			.. (Settings.TeamHighlight and "ON" or "OFF")
+			.. " ]"
+	end
+end
+
+AllButton = Button("All Highlight     [ OFF ]")
+AllButton.MouseButton1Click:Connect(function()
+	SetHighlightMode("All")
+end)
+
+TeamButton = Button("Team Highlight     [ OFF ]")
+TeamButton.MouseButton1Click:Connect(function()
+	SetHighlightMode("Team")
+end)
+
+Toggle("HP Bar", function(v)
+	Settings.HPBar = v
+end)
+
+--// AIM ASSIST
+Section("🎯  AIM ASSIST")
+
+Toggle("Aim", function(v)
+	Settings.Aim = v
+end)
+
+local RateButton = Button("Update Rate: 5 ms")
+
+RateButton.MouseButton1Click:Connect(function()
+	Settings.UpdateRate += 1
+
+	if Settings.UpdateRate > 10 then
+		Settings.UpdateRate = 1
+	end
+
+	RateButton.Text = "Update Rate: " .. Settings.UpdateRate .. " ms"
+end)
+
+local SmoothButton = Button("Smoothness: 5")
+
+SmoothButton.MouseButton1Click:Connect(function()
+	Settings.Smoothness += 1
+
+	if Settings.Smoothness > 10 then
+		Settings.Smoothness = 1
+	end
+
+	SmoothButton.Text = "Smoothness: " .. Settings.Smoothness
+end)
+
+local HeadButton = Button("Part: [ HEAD ]   [ BODY ]")
+
+HeadButton.MouseButton1Click:Connect(function()
+	if Settings.AimPart == "Head" then
+		Settings.AimPart = "Body"
+		HeadButton.Text = "Part: [ HEAD ]   [ BODY ✓ ]"
+	else
+		Settings.AimPart = "Head"
+		HeadButton.Text = "Part: [ HEAD ✓ ]   [ BODY ]"
+	end
+end)
+
+--// FOV
+local FOVFrame = Instance.new("Frame")
+FOVFrame.Size = UDim2.new(1, -8, 0, 50)
+FOVFrame.BackgroundTransparency = 1
+FOVFrame.Parent = Scroll
+
+local FOVLabel = Instance.new("TextLabel")
+FOVLabel.Size = UDim2.new(0, 65, 1, 0)
+FOVLabel.BackgroundTransparency = 1
+FOVLabel.Text = "FOV"
+FOVLabel.TextColor3 = Color3.fromRGB(235, 225, 245)
+FOVLabel.TextSize = 14
+FOVLabel.Font = Enum.Font.GothamMedium
+FOVLabel.Parent = FOVFrame
+
+local FOVLayout = Instance.new("UIListLayout")
+FOVLayout.FillDirection = Enum.FillDirection.Horizontal
+FOVLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+FOVLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+FOVLayout.Padding = UDim.new(0, 5)
+FOVLayout.Parent = FOVFrame
+
+local function FOVButton(value)
+	local B = Instance.new("TextButton")
+	B.Size = UDim2.new(0, 55, 0, 32)
+	B.BackgroundColor3 = Color3.fromRGB(32, 21, 42)
+	B.Text = tostring(value)
+	B.TextColor3 = Color3.fromRGB(235, 225, 245)
+	B.TextSize = 14
+	B.Font = Enum.Font.GothamBold
+	B.Parent = FOVFrame
+
+	local C = Instance.new("UICorner")
+	C.CornerRadius = UDim.new(0, 7)
+	C.Parent = B
+
+	B.MouseButton1Click:Connect(function()
+		Settings.FOV = value
+
+		for _, child in ipairs(FOVFrame:GetChildren()) do
+			if child:IsA("TextButton") then
+				child.BackgroundColor3 = Color3.fromRGB(32, 21, 42)
+			end
+		end
+
+		B.BackgroundColor3 = Color3.fromRGB(95, 45, 145)
+	end)
+
+	return B
+end
+
+local FOV30 = FOVButton(30)
+local FOV45 = FOVButton(45)
+local FOV90 = FOVButton(90)
+
+FOV90.BackgroundColor3 = Color3.fromRGB(95, 45, 145)
+
+--// FOV CIRCLE
+local FOVCircle = Instance.new("Frame")
+FOVCircle.Name = "FOVCircle"
+FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+FOVCircle.BackgroundTransparency = 1
+FOVCircle.Size = UDim2.new(0, Settings.FOV * 4, 0, Settings.FOV * 4)
+FOVCircle.Visible = false
+FOVCircle.Parent = ScreenGui
+
+local CircleCorner = Instance.new("UICorner")
+CircleCorner.CornerRadius = UDim.new(1, 0)
+CircleCorner.Parent = FOVCircle
+
+local CircleStroke = Instance.new("UIStroke")
+CircleStroke.Color = Color3.fromRGB(170, 70, 255)
+CircleStroke.Thickness = 2
+CircleStroke.Transparency = 0.15
+CircleStroke.Parent = FOVCircle
+
+--// UPDATE FOV CIRCLE
+local function UpdateFOVCircle()
+	FOVCircle.Size = UDim2.new(0, Settings.FOV * 4, 0, Settings.FOV * 4)
+	FOVCircle.Visible = Settings.Aim
+end
+
+--// HIGHLIGHT STORAGE
+local Highlights = {}
+local HPBars = {}
+
+local function RemoveVisuals(player)
+	if Highlights[player] then
+		Highlights[player]:Destroy()
+		Highlights[player] = nil
+	end
+
+	if HPBars[player] then
+		HPBars[player]:Destroy()
+		HPBars[player] = nil
+	end
+end
+
+local function ShouldHighlight(player)
+	if player == LocalPlayer then
+		return false
+	end
+
+	if not player.Character then
+		return false
+	end
+
+	if not player.Character.Parent then
+		return false
+	end
+
+	if Settings.AllHighlight then
+		return true
+	end
+
+	if Settings.TeamHighlight then
+		return player.Team == LocalPlayer.Team
+	end
+
+	return false
+end
+
+--// HP BAR
+local function CreateHPBar(player, character)
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+	if not humanoid then
+		return
+	end
+
+	if HPBars[player] then
+		HPBars[player]:Destroy()
+	end
+
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return
+	end
+
+	local Billboard = Instance.new("BillboardGui")
+	Billboard.Name = "VexHPBar"
+	Billboard.Adornee = root
+	Billboard.Size = UDim2.new(0, 7, 0, 65)
+	Billboard.StudsOffset = Vector3.new(-2.3, 0, 0)
+	Billboard.AlwaysOnTop = true
+	Billboard.Parent = root
+
+	local Background = Instance.new("Frame")
+	Background.Size = UDim2.new(1, 0, 1, 0)
+	Background.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	Background.BorderSizePixel = 0
+	Background.Parent = Billboard
+
+	local BackCorner = Instance.new("UICorner")
+	BackCorner.CornerRadius = UDim.new(1, 0)
+	BackCorner.Parent = Background
+
+	local Fill = Instance.new("Frame")
+	Fill.AnchorPoint = Vector2.new(0, 1)
+	Fill.Position = UDim2.new(0, 0, 1, 0)
+	Fill.Size = UDim2.new(1, 0, 1, 0)
+	Fill.BackgroundColor3 = Color3.fromRGB(170, 70, 255)
+	Fill.BorderSizePixel = 0
+	Fill.Parent = Background
+
+	local FillCorner = Instance.new("UICorner")
+	FillCorner.CornerRadius = UDim.new(1, 0)
+	FillCorner.Parent = Fill
+
+	local function Update()
+		if humanoid.Health <= 0 then
+			Fill.Size = UDim2.new(1, 0, 0, 0)
+			return
+		end
+
+		local percent = math.clamp(
+			humanoid.Health / humanoid.MaxHealth,
+			0,
+			1
+		)
+
+		Fill.Size = UDim2.new(1, 0, percent, 0)
+	end
+
+	humanoid.HealthChanged:Connect(Update)
+	Update()
+
+	HPBars[player] = Billboard
+end
+
+--// HIGHLIGHT CREATION
+local function UpdatePlayerVisual(player)
+	if not player.Character then
+		RemoveVisuals(player)
+		return
+	end
+
+	if not player.Character.Parent then
+		RemoveVisuals(player)
+		return
+	end
+
+	if not ShouldHighlight(player) then
+		RemoveVisuals(player)
+		return
+	end
+
+	local character = player.Character
+
+	-- Highlight
+	if not Highlights[player] then
+		local Highlight = Instance.new("Highlight")
+		Highlight.Name = "VexHighlight"
+		Highlight.FillColor = Color3.fromRGB(155, 55, 255)
+		Highlight.OutlineColor = Color3.fromRGB(220, 170, 255)
+		Highlight.FillTransparency = 0.5
+		Highlight.OutlineTransparency = 0
+		Highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+		Highlight.Adornee = character
+		Highlight.Parent = character
+
+		Highlights[player] = Highlight
+	else
+		Highlights[player].Adornee = character
+	end
+
+	-- HP BAR only if enabled
+	if Settings.HPBar then
+		if not HPBars[player] then
+			CreateHPBar(player, character)
+		end
+	else
+		if HPBars[player] then
+			HPBars[player]:Destroy()
+			HPBars[player] = nil
+		end
+	end
+end
+
+--// PLAYER CONNECTIONS
+local function SetupPlayer(player)
+	if player == LocalPlayer then
+		return
+	end
+
+	player.CharacterAdded:Connect(function()
+		task.wait(0.1)
+		UpdatePlayerVisual(player)
+	end)
+
+	player.CharacterRemoving:Connect(function()
+		RemoveVisuals(player)
+	end)
+
+	player:GetPropertyChangedSignal("Team"):Connect(function()
+		UpdatePlayerVisual(player)
+	end)
+
+	if player.Character then
+		UpdatePlayerVisual(player)
+	end
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+	SetupPlayer(player)
+end
+
+Players.PlayerAdded:Connect(SetupPlayer)
+
+Players.PlayerRemoving:Connect(function(player)
+	RemoveVisuals(player)
+end)
+
+--// CONTINUOUS HIGHLIGHT UPDATE
+task.spawn(function()
+	while true do
+		for _, player in ipairs(Players:GetPlayers()) do
+			if player ~= LocalPlayer then
+				UpdatePlayerVisual(player)
+			end
+		end
+
+		task.wait(0.25)
+	end
+end)
+
+--// NOCLIP
+RunService.Stepped:Connect(function()
+	if not Settings.Noclip then
+		return
+	end
+
+	local character = LocalPlayer.Character
+	if not character then
+		return
+	end
+
+	for _, object in ipairs(character:GetDescendants()) do
+		if object:IsA("BasePart") then
+			object.CanCollide = false
+		end
+	end
+end)
+
+--// WALKSPEED
+RunService.Heartbeat:Connect(function()
+	local character = LocalPlayer.Character
+	if not character then
+		return
+	end
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.WalkSpeed = Settings.WalkSpeed
+	end
+end)
+
+--// INFINITE JUMP
+UserInputService.JumpRequest:Connect(function()
+	if not Settings.InfiniteJump then
+		return
+	end
+
+	local character = LocalPlayer.Character
+	if not character then
+		return
+	end
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+	if humanoid then
+		humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end)
+
+--// AIM ASSIST
+local function GetAimPart(character)
+	if Settings.AimPart == "Head" then
+		return character:FindFirstChild("Head")
+	end
+
+	return character:FindFirstChild("UpperTorso")
+		or character:FindFirstChild("Torso")
+		or character:FindFirstChild("HumanoidRootPart")
+end
+
+local function GetClosestTarget()
+	local closest = nil
+	local closestDistance = math.huge
+
+	local viewport = Camera.ViewportSize
+	local center = Vector2.new(viewport.X / 2, viewport.Y / 2)
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			local character = player.Character
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+			if character and humanoid and humanoid.Health > 0 then
+				if not Settings.TeamCheck or player.Team ~= LocalPlayer.Team then
+					local part = GetAimPart(character)
+
+					if part then
+						local screenPosition, visible =
+							Camera:WorldToViewportPoint(part.Position)
+
+						if visible and screenPosition.Z > 0 then
+							local distance = (
+								Vector2.new(
+									screenPosition.X,
+									screenPosition.Y
+								) - center
+							).Magnitude
+
+							local radius = Settings.FOV * 2
+
+							if distance <= radius and distance < closestDistance then
+								closestDistance = distance
+								closest = part
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	return closest
+end
+
+task.spawn(function()
+	while true do
+		if Settings.Aim then
+			local target = GetClosestTarget()
+
+			if target then
+				local cameraPosition = Camera.CFrame.Position
+
+				local targetCFrame = CFrame.lookAt(
+					cameraPosition,
+					target.Position
+				)
+
+				local alpha = math.clamp(
+					Settings.Smoothness / 10,
+					0.05,
+					1
+				)
+
+				Camera.CFrame = Camera.CFrame:Lerp(
+					targetCFrame,
+					alpha
+				)
+			end
+		end
+
+		task.wait(Settings.UpdateRate / 1000)
+	end
+end)
+
+--// FOV UPDATE
+RunService.RenderStepped:Connect(function()
+	UpdateFOVCircle()
+end)
+
+--// COLLAPSE
+local Collapsed = false
+
+CollapseButton.MouseButton1Click:Connect(function()
+	Collapsed = not Collapsed
+
+	if Collapsed then
+		Scroll.Visible = false
+		Main.Size = UDim2.new(0, 300, 0, 45)
+		CollapseButton.Text = "+"
+	else
+		Scroll.Visible = true
+		Main.Size = UDim2.new(0, 300, 0, 430)
+		CollapseButton.Text = "—"
+	end
+end)
+
+--// DRAGGING
+local Locked = false
+local Dragging = false
+local DragStart
+local StartPosition
+
+local function StartDrag(input)
+	if Locked then
+		return
+	end
+
+	Dragging = true
+	DragStart = input.Position
+	StartPosition = Main.Position
+end
+
+local function UpdateDrag(input)
+	if not Dragging or Locked then
+		return
+	end
+
+	local Delta = input.Position - DragStart
+
+	Main.Position = UDim2.new(
+		StartPosition.X.Scale,
+		StartPosition.X.Offset + Delta.X,
+		StartPosition.Y.Scale,
+		StartPosition.Y.Offset + Delta.Y
+	)
+end
+
+local function EndDrag()
+	Dragging = false
+end
+
+TopBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+		StartDrag(input)
+	end
+end)
+
+TopBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
+
+		UserInputService.InputChanged:Connect(function(changed)
+			if changed == input then
+				UpdateDrag(changed)
+			end
+		end)
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+		EndDrag()
+	end
+end)
+
+--// LOCK
+LockButton.MouseButton1Click:Connect(function()
+	Locked = not Locked
+
+	if Locked then
+		LockButton.Text = "🔒"
+		LockButton.BackgroundColor3 = Color3.fromRGB(90, 40, 125)
+	else
+		LockButton.Text = "🔓"
+		LockButton.BackgroundColor3 = Color3.fromRGB(45, 25, 60)
+	end
+end)
+
+print("Vex Hub loaded successfully.")
